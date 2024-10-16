@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path, re_path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.conf import settings
@@ -24,13 +24,12 @@ from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from django.urls import path, re_path
 
 schema_view = get_schema_view(
     openapi.Info(
         title="Bibliothèque API",
         default_version='v1',
-        description="Documentation de l'API pour la gestion de la bibliothèque",
+        description="Documentation de l'API pour la gestion des livres",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="contact@bibliotheque.local"),
         license=openapi.License(name="BSD License"),
@@ -46,13 +45,13 @@ class HelloWorld(APIView):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/hello/', HelloWorld.as_view(), name='hello_world'),
-     # Swagger UI
+    path('api/', include('books_app.urls')),
+
+    # Swagger UI
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    
     # ReDoc UI
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

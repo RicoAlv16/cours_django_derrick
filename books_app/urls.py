@@ -16,15 +16,13 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.conf import settings
 from django.conf.urls.static import static
-
-from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import AuteurViewSet, LivreViewSet, CategorieViewSet, ExemplaireViewSet, CommentaireViewSet, EditeurViewSet, EvaluationViewSet
+from .views import AuteurListView, AuteurViewSet, LivreListView, LivreViewSet, CategorieViewSet, ExemplaireViewSet, CommentaireViewSet, EditeurViewSet, EvaluationViewSet
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -36,6 +34,8 @@ class HelloWorld(APIView):
 
 urlpatterns = [
     path('api/hello/', HelloWorld.as_view(), name='hello_world'),
+    path('livres/', LivreListView.as_view(), name='livre-list'),
+    path('auteurs/', AuteurListView.as_view(), name='auteur-list'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

@@ -31,21 +31,29 @@ class EditeurSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'nom': {'help_text': 'Nom complet de l\'editeur'},
             'adresse': {'help_text': 'Adresse de l\'editeur'},
-            'site_web': {'help_text': 'Site_web de l\'editeur (AAAA-MM-JJ)'},
+            'site_web': {'help_text': 'Site_web de l\'editeur'},
             'email_contact': {'help_text': 'Email_contact de l\'editeur si applicable (optionnel)'},
             'description': {'help_text': 'Description biographique de l\'editeur'},
             'logo': {'help_text': 'logo de l\'editeur'}
         }
 
-class LivreSerializer(serializers.ModelSerializer):
-    auteurs = AuteurSerializer(many=True, read_only=True)  # Sérialiseur imbriqué pour les auteurs
-    categorie = CategorieSerializer(read_only=True)  # Sérialiseur pour la catégorie
-    editeur = EditeurSerializer(read_only=True)  # Sérialiseur pour l'éditeur
-
+class LivreSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Livre
-        fields = ['id', 'titre', 'resume', 'date_de_publication', 'isbn', 'nombre_de_pages', 'langue', 
-                  'image_de_couverture', 'format', 'auteurs', 'categorie', 'editeur']
+        fields = [
+            'url', 
+            'titre', 
+            'resume', 
+            'date_de_publication', 
+            'isbn', 
+            'nombre_de_pages', 
+            'langue', 
+            'image_de_couverture', 
+            'format', 
+            'auteurs', 
+            'categorie', 
+            'editeur'
+        ]
         extra_kwargs = {
             'titre': {'help_text': 'Titre du livre'},
             'description': {'help_text': 'Résumé ou description du livre'},

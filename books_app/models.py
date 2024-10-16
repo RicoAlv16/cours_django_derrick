@@ -19,6 +19,17 @@ class Categorie(models.Model):
 
     def __str__(self):
         return self.nom
+    
+class Editeur(models.Model):
+    nom = models.CharField(max_length=255)
+    adresse = models.CharField(max_length=255)
+    site_web = models.URLField(null=True, blank=True)
+    email_contact = models.EmailField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    logo = models.ImageField(upload_to='logos_editeurs/', null=True, blank=True)
+
+    def __str__(self):
+        return self.nom
 
 class Livre(models.Model):
     titre = models.CharField(max_length=255)
@@ -28,14 +39,14 @@ class Livre(models.Model):
     nombre_de_pages = models.IntegerField()
     langue = models.CharField(max_length=100)
     image_de_couverture = models.ImageField(upload_to='couvertures_livres/', null=True, blank=True)
-    editeur = models.ForeignKey('Editeur', on_delete=models.SET_NULL, null=True, blank=True)
     format = models.CharField(max_length=50, choices=[('Broché', 'Broché'), ('Relié', 'Relié'), ('Numérique', 'Numérique')])
+
+    # Relation OneToMany avec Catégorie et Editeur
+    editeur = models.ForeignKey(Editeur, on_delete=models.CASCADE)
+    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, related_name='livres')
 
     # Relation ManyToMany avec les Auteurs
     auteurs = models.ManyToManyField(Auteur, related_name='livres')
-
-    # Relation OneToMany avec Catégorie
-    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, related_name='livres')
 
     def __str__(self):
         return self.titre
@@ -79,17 +90,6 @@ class Commentaire(models.Model):
 
     def __str__(self):
         return f"Commentaire de {self.utilisateur} sur {self.livre.titre}"
-
-class Editeur(models.Model):
-    nom = models.CharField(max_length=255)
-    adresse = models.CharField(max_length=255)
-    site_web = models.URLField(null=True, blank=True)
-    email_contact = models.EmailField(null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    logo = models.ImageField(upload_to='logos_editeurs/', null=True, blank=True)
-
-    def __str__(self):
-        return self.nom
 
 class Evaluation(models.Model):
     note = models.IntegerField(default=1, choices=[(i, i) for i in range(1, 6)])
