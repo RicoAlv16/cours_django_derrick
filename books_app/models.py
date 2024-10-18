@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from guardian.mixins import GuardianUserMixin
+from guardian.shortcuts import assign_perm
 
 class Auteur(models.Model):
     nom = models.CharField(max_length=255)
@@ -8,6 +10,12 @@ class Auteur(models.Model):
     date_de_deces = models.DateField(null=True, blank=True)
     nationalite = models.CharField(max_length=100)
     photo = models.ImageField(upload_to='photos_auteurs/', null=True, blank=True)
+    class Meta:
+        permissions = [
+            ('voir_auteur', 'Peut voir un auteur'),
+            ('changer_auteur', 'Peut modifier un auteur'),
+            ('supp_auteur', 'Peut supprimer un auteur'),
+        ]
 
     def __str__(self):
         return self.nom
@@ -47,6 +55,13 @@ class Livre(models.Model):
 
     # Relation ManyToMany avec les Auteurs
     auteurs = models.ManyToManyField(Auteur, related_name='livres')
+
+    class Meta:
+        permissions = [
+            ('voir_livre', 'Peut voir un livre'),
+            ('changer_livre', 'Peut modifier un livre'),
+            ('supp_livre', 'Peut supprimer un livre'),
+        ]
 
     def __str__(self):
         return self.titre

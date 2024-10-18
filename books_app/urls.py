@@ -22,7 +22,27 @@ from rest_framework.views import APIView
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
-from .views import AuteurListView, AuteurViewSet, LivreListView, LivreViewSet, CategorieViewSet, ExemplaireViewSet, CommentaireViewSet, EditeurViewSet, EvaluationViewSet
+from .views import AuteurListView, AuteurViewSet, LivreListView, LivreViewSet, CategorieViewSet, ExemplaireViewSet, CommentaireViewSet, EditeurViewSet, EvaluationViewSet, LogoutView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Book API",
+      default_version='v1',
+      description="Test description",
+      contact=openapi.Contact(email="contact@snippets.local"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+from rest_framework_simplejwt.views import TokenBlacklistView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -31,13 +51,6 @@ urlpatterns = [
 class HelloWorld(APIView):
     def get(self, request):
         return Response({"message": "Hello, world!"})
-
-urlpatterns = [
-    path('api/hello/', HelloWorld.as_view(), name='hello_world'),
-    path('livres/', LivreListView.as_view(), name='livre-list'),
-    path('auteurs/', AuteurListView.as_view(), name='auteur-list'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 
 router = DefaultRouter()
 router.register(r'auteurs', AuteurViewSet)
@@ -50,4 +63,14 @@ router.register(r'evaluation', EvaluationViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-]
+    path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # Endpoint pour obtenir le token d'accès et de rafraîchissement
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    # Endpoint pour blacklister un token lors de la déconnexion
+    path('api/token/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
+    path('api/logout/', LogoutView.as_view(), name='logout'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
