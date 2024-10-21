@@ -10,14 +10,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, DjangoObjectPermissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from guardian.shortcuts import assign_perm
 
 class AuteurViewSet(viewsets.ModelViewSet):
     queryset = Auteur.objects.all()
     serializer_class = AuteurSerializer
-    permission_classes = [DjangoModelPermissions]
-    permission_classes = [DjangoObjectPermissions]
-
+    permission_classes = [DjangoModelPermissions, DjangoObjectPermissions]
     # assigner des permissions à un utilisateur juste après qu'un objet a été créé ou modifié.
     def perform_create(self, serializer):
         auteur = serializer.save()  
@@ -87,6 +86,6 @@ class LogoutView(APIView):
         
 class ProtectedView(APIView):
     permission_classes = [IsAuthenticated]  # Seuls les utilisateurs authentifiés peuvent accéder
-
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         return Response(data={"message": "Vous êtes authentifié"}, status=status.HTTP_200_OK)

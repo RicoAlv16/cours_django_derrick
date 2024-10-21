@@ -44,19 +44,34 @@ REST_FRAMEWORK = {
 }
 
 INSTALLED_APPS = [
+    # Django apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django.contrib.sites',
+    
+    # les autres apps
     'rest_framework',
-    'books_app',
     'drf_yasg',
     'django_filters',
     'rest_framework_simplejwt.token_blacklist',
     'guardian',
+    'axes',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',
+    'two_factor',
+    'crispy_forms',
+    
+    # apps
+    'books_app',
 ]
+
+
+SITE_ID = 1
 
 # Configuration de la durée de validité des JWT tokens
 from datetime import timedelta
@@ -67,6 +82,8 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
 }
 
 MIDDLEWARE = [
@@ -77,7 +94,13 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "axes.middleware.AxesMiddleware",
+    'django_otp.middleware.OTPMiddleware',
+    'two_factor.middleware.threadlocals.ThreadLocals',
 ]
+
+AXES_FAILURE_LIMIT = 3  # Nombre maximal de tentatives de connexion échouées
+AXES_COOLOFF_TIME = 1  # Temps de blocage (en heures) après les tentatives échouées
 
 ROOT_URLCONF = "cours_django_derrick.urls"
 
@@ -117,9 +140,15 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        'OPTIONS': {
+            'max_similarity': 0.7,  # Empêche les mots de passe trop similaires aux informations utilisateur
+        }
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        'OPTIONS': {
+            'min_length': 13,  # Longueur minimale recommandée
+        }
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -129,10 +158,36 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = (
+# Optionnel : Limite les tentatives de connexion pour protéger contre les attaques par force brute
+AXES_FAILURE_LIMIT = 3  # Nombre maximal de tentatives de connexion
+AXES_COOLOFF_TIME = 1  # Temps de blocage (en heures) après l'échec des tentatives
+
+# Optionnel : Utiliser un mot de passe de cryptage fort pour 2024
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
     'django.contrib.auth.backends.ModelBackend',
     'guardian.backends.ObjectPermissionBackend',
-)
+    'django_otp.backends.OTPBackend',
+    'two_factor.auth_backends.TokenBackend',
+]
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.siteduzero.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'derrick-alavo@gmail.com'
+EMAIL_HOST_PASSWORD = '__password525'
+DEFAULT_FROM_EMAIL = 'info@siteduzero.com'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
